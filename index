@@ -1,0 +1,1848 @@
+<!DOCTYPE html> 
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bloco Inteligente Web</title>
+
+  <style>
+    :root{
+      --bg1:#030712;
+      --bg2:#050f24;
+      --glass:rgba(255,255,255,.06);
+      --glass2:rgba(255,255,255,.09);
+      --border:rgba(0,234,255,.25);
+      --border2:rgba(255,255,255,.12);
+      --neon:#00eaff;
+      --pink:#ff4fd8;
+      --purple:#8a5cff;
+      --text:#eaf6ff;
+      --muted:#9fb7c7;
+      --shadow: 0 18px 60px rgba(0,0,0,.45);
+      --radius: 22px;
+      --radius2: 16px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 20% 10%, rgba(0,234,255,.14), transparent 60%),
+        radial-gradient(1000px 700px at 85% 25%, rgba(255,79,216,.12), transparent 55%),
+        radial-gradient(1200px 800px at 50% 90%, rgba(138,92,255,.12), transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow-x:hidden;
+    }
+
+    .sparkle{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.35;
+      background-image:
+        radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.7) 40%, transparent 60%),
+        radial-gradient(2px 2px at 70% 15%, rgba(255,255,255,.6) 40%, transparent 60%),
+        radial-gradient(2px 2px at 80% 70%, rgba(255,255,255,.5) 40%, transparent 60%),
+        radial-gradient(1.6px 1.6px at 35% 80%, rgba(255,255,255,.6) 40%, transparent 60%),
+        radial-gradient(1.6px 1.6px at 55% 55%, rgba(255,255,255,.55) 40%, transparent 60%),
+        radial-gradient(1.6px 1.6px at 10% 70%, rgba(255,255,255,.55) 40%, transparent 60%);
+      animation: twinkle 5s ease-in-out infinite;
+    }
+    @keyframes twinkle{
+      0%,100%{ filter:blur(0px); transform:translateY(0px); opacity:.25; }
+      50%{ filter:blur(.4px); transform:translateY(-2px); opacity:.45; }
+    }
+
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:26px 16px 40px;
+    }
+
+    header{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      justify-content:space-between;
+      margin-bottom:18px;
+    }
+
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    .title{
+      font-size:22px;
+      letter-spacing:.4px;
+      font-weight:900;
+      line-height:1.1;
+      background: linear-gradient(90deg, var(--neon), var(--pink), var(--purple));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      text-shadow: 0 0 18px rgba(0,234,255,.08);
+    }
+    .subtitle{
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.3;
+      max-width:650px;
+    }
+
+    .topActions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .btn{
+      border:1px solid var(--border2);
+      background: rgba(255,255,255,.04);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      font-weight:700;
+      transition:.18s ease;
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      user-select:none;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+    }
+    .btn:hover{ transform:translateY(-1px); border-color:var(--border); }
+    .btn:active{ transform:translateY(0px) scale(.99); }
+    .btnPrimary{
+      border:1px solid rgba(0,234,255,.35);
+      background: linear-gradient(135deg, rgba(0,234,255,.18), rgba(255,79,216,.12));
+      box-shadow: 0 0 0 1px rgba(0,234,255,.06), 0 18px 60px rgba(0,0,0,.35);
+    }
+    .btnDanger{
+      border:1px solid rgba(255,79,216,.35);
+      background: rgba(255,79,216,.08);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+    }
+    @media(max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+      header{ flex-direction:column; align-items:flex-start; }
+      .topActions{ width:100%; justify-content:flex-start; }
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .cardHeader{
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    .cardHeader h2{
+      margin:0;
+      font-size:14px;
+      letter-spacing:.4px;
+      text-transform:uppercase;
+      color:#d7f6ff;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    .tag{
+      font-size:11px;
+      color:rgba(255,255,255,.75);
+      background: rgba(0,234,255,.10);
+      border:1px solid rgba(0,234,255,.18);
+      padding:4px 8px;
+      border-radius:999px;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+
+    .cardBody{ padding:14px 16px 16px; }
+
+    textarea{
+      width:100%;
+      min-height:320px;
+      resize:vertical;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      color:var(--text);
+      padding:14px 14px;
+      outline:none;
+      font-size:14px;
+      line-height:1.5;
+      box-shadow: inset 0 0 0 1px rgba(0,234,255,.04);
+    }
+    textarea:focus{
+      border-color: rgba(0,234,255,.35);
+      box-shadow: 0 0 0 4px rgba(0,234,255,.08);
+    }
+
+    input[type="text"]{
+      width:100%;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      color:var(--text);
+      padding:11px 12px;
+      outline:none;
+      font-size:14px;
+    }
+    input[type="text"]:focus{
+      border-color: rgba(0,234,255,.35);
+      box-shadow: 0 0 0 4px rgba(0,234,255,.08);
+    }
+
+    .hint{
+      color:var(--muted);
+      font-size:12px;
+      margin-top:10px;
+      line-height:1.35;
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .noteItem{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      border-radius: 18px;
+      padding:12px 12px;
+      display:flex;
+      gap:12px;
+      justify-content:space-between;
+      align-items:flex-start;
+      transition:.18s ease;
+    }
+    .noteItem:hover{
+      border-color: rgba(0,234,255,.25);
+      transform: translateY(-1px);
+    }
+
+    .noteMeta{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:0;
+      flex:1;
+    }
+    .noteTitle{
+      font-weight:900;
+      font-size:14px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .noteDate{
+      color:var(--muted);
+      font-size:12px;
+    }
+    .notePreview{
+      color:rgba(255,255,255,.72);
+      font-size:12px;
+      line-height:1.25;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      opacity:.9;
+    }
+
+    .noteActions{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:flex-end;
+    }
+
+    .mini{
+      padding:8px 10px;
+      border-radius:12px;
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .view{
+      display:none;
+      margin-top:12px;
+    }
+
+    .viewTop{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .viewTitle{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      min-width:0;
+      flex:1;
+    }
+    .viewTitle h1{
+      margin:0;
+      font-size:18px;
+      font-weight:1000;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .viewTitle .small{
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .blocks{
+      padding:16px;
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap:12px;
+    }
+    @media(max-width: 900px){
+      .blocks{ grid-template-columns: 1fr; }
+    }
+
+    .block{
+      border-radius: 22px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      padding:14px 14px 12px;
+      position:relative;
+      overflow:hidden;
+      box-shadow: 0 16px 50px rgba(0,0,0,.25);
+    }
+    .block::before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background: radial-gradient(600px 260px at 30% 0%, rgba(0,234,255,.10), transparent 55%),
+                  radial-gradient(600px 260px at 70% 0%, rgba(255,79,216,.08), transparent 55%);
+      opacity:.7;
+      pointer-events:none;
+    }
+    .block > *{ position:relative; z-index:1; }
+
+    .block h3{
+      margin:0 0 10px;
+      font-size:13px;
+      letter-spacing:.35px;
+      text-transform:uppercase;
+      color:#d7f6ff;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    .kv{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .row{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      justify-content:space-between;
+      border-bottom:1px dashed rgba(255,255,255,.12);
+      padding-bottom:8px;
+    }
+    .row:last-child{ border-bottom:none; padding-bottom:0; }
+    .k{
+      color:rgba(255,255,255,.75);
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.2px;
+      min-width:140px;
+      max-width:140px;
+    }
+    .v{
+      flex:1;
+      text-align:right;
+      font-size:13px;
+      color:rgba(255,255,255,.92);
+      word-break:break-word;
+    }
+
+    .lines{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .line{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      padding:10px 12px;
+      border-radius: 16px;
+      font-size:13px;
+      line-height:1.35;
+      color:rgba(255,255,255,.92);
+      word-break:break-word;
+    }
+
+    .rawBox{
+      margin-top:14px;
+      border-top:1px solid rgba(255,255,255,.08);
+      padding:16px;
+    }
+
+    .rawBox details{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.22);
+      border-radius: 18px;
+      padding:12px 12px;
+    }
+    .rawBox summary{
+      cursor:pointer;
+      font-weight:900;
+      color:#d7f6ff;
+      letter-spacing:.2px;
+    }
+    pre{
+      margin:10px 0 0;
+      white-space:pre-wrap;
+      word-break:break-word;
+      color:rgba(255,255,255,.85);
+      font-size:12.5px;
+      line-height:1.5;
+    }
+
+    .toast{
+      position:fixed;
+      bottom:16px;
+      left:50%;
+      transform:translateX(-50%);
+      background: rgba(0,0,0,.65);
+      border:1px solid rgba(255,255,255,.12);
+      color:rgba(255,255,255,.92);
+      padding:10px 12px;
+      border-radius: 14px;
+      font-weight:800;
+      font-size:13px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.45);
+      opacity:0;
+      pointer-events:none;
+      transition:.2s ease;
+      backdrop-filter: blur(10px);
+      z-index:9999;
+    }
+    .toast.show{ opacity:1; transform:translateX(-50%) translateY(-2px); }
+
+    .foot{
+      margin-top:16px;
+      color:rgba(255,255,255,.45);
+      font-size:12px;
+      text-align:center;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      font-size:12px;
+      color:rgba(255,255,255,.78);
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+
+    .userBox{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 10px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      max-width: 520px;
+      overflow:hidden;
+    }
+    .avatar{
+      width:34px;
+      height:34px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      overflow:hidden;
+      flex:0 0 auto;
+    }
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .userMeta{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:0;
+      flex:1;
+    }
+    .userName{
+      font-weight:1000;
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .userEmail{
+      font-size:12px;
+      color:rgba(255,255,255,.65);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .smallBtn{
+      padding:8px 10px;
+      border-radius: 12px;
+      font-size:12px;
+      font-weight:1000;
+    }
+
+    .miniPreviewRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top: 10px;
+    }
+    .miniPreview{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 10px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+    }
+    .miniPreview img{
+      width:34px;
+      height:34px;
+      object-fit:cover;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.12);
+      display:block;
+    }
+    .miniPreview span{
+      font-size:12px;
+      font-weight:900;
+      color:rgba(255,255,255,.85);
+    }
+
+    /* SHARE MODE (somente leitura) */
+    .shareTop{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .shareTitle{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+      flex:1;
+    }
+    .shareTitle h1{
+      margin:0;
+      font-size:18px;
+      font-weight:1000;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .shareSticker{
+      width:44px;
+      height:44px;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      overflow:hidden;
+      flex:0 0 auto;
+      display:none;
+      box-shadow: 0 16px 40px rgba(0,0,0,.25);
+    }
+    .shareSticker img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
+      padding:6px;
+    }
+    .shareSub{
+      padding:0 16px 14px;
+      color:rgba(255,255,255,.70);
+      font-size:12.5px;
+      line-height:1.35;
+    }
+    .shareBox{
+      display:none;
+      margin-top:12px;
+    }
+    .shareLock{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      font-size:12px;
+      color:rgba(255,255,255,.78);
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sparkle"></div>
+
+  <div class="wrap">
+    <header id="mainHeader">
+      <div class="brand">
+        <div class="title">Bloco de Notas Inteligente (Web)</div>
+        <div class="subtitle">
+          Cole qualquer texto, clique em <b>Salvar & Abrir</b> e o site organiza automaticamente em blocos bonitos.
+          <br>
+          <span style="color:#bfefff">
+            🔐 Se você entrar com Google, suas notas ficam salvas na nuvem (Firestore) e abrem em qualquer lugar.
+          </span>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="userBox" id="userBox">
+          <div class="avatar" id="avatar">
+            <img id="avatarImg" src="" alt="" style="display:none">
+          </div>
+          <div class="userMeta">
+            <div class="userName" id="userName">Não logado</div>
+            <div class="userEmail" id="userEmail">Modo offline (LocalStorage)</div>
+          </div>
+          <button class="btn smallBtn btnPrimary" id="btnLogin">Entrar</button>
+          <button class="btn smallBtn" id="btnLogout" style="display:none;">Sair</button>
+        </div>
+      </div>
+
+      <div class="topActions" id="topActions">
+        <button class="btn" id="btnGoHome">🏠 Painel</button>
+        <button class="btn" id="btnNew">✨ Nova Nota</button>
+        <button class="btn btnDanger" id="btnClearAll">🗑️ Apagar Tudo</button>
+      </div>
+    </header>
+
+    <!-- HOME / EDITOR -->
+    <section id="home" class="grid">
+      <div class="card">
+        <div class="cardHeader">
+          <h2>📝 Colar texto</h2>
+          <span class="tag" id="saveModeTag">SALVANDO OFFLINE</span>
+        </div>
+        <div class="cardBody">
+          <input type="text" id="noteName" placeholder="Nome da nota (ex: Ideias, Texto do dia...)" />
+          <div style="height:10px"></div>
+          <textarea id="noteText" placeholder="Cole aqui qualquer texto..."></textarea>
+
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+            <button class="btn btnPrimary" id="btnSaveOpen">🚀 Salvar & Abrir</button>
+            <button class="btn" id="btnJustSave">💾 Só Salvar</button>
+            <button class="btn" id="btnFormatPreview">👁️ Pré-organizar</button>
+
+            <button class="btn" id="btnExportHTML">📄 Exportar Nota (HTML)</button>
+
+            <button class="btn" id="btnPickFavicon">🧿 Ícone do Export</button>
+            <button class="btn" id="btnPickSticker">📎 Emoji/Sticker</button>
+            <button class="btn btnDanger" id="btnClearExtras">🧼 Limpar Ícone/Sticker</button>
+          </div>
+
+          <div class="miniPreviewRow">
+            <div class="miniPreview">
+              <img id="faviconPreview" src="" alt="" style="display:none">
+              <span id="faviconLabel">Ícone: (nenhum)</span>
+            </div>
+            <div class="miniPreview">
+              <img id="stickerPreview" src="" alt="" style="display:none">
+              <span id="stickerLabel">Sticker: (nenhum)</span>
+            </div>
+          </div>
+
+          <div class="hint">
+            Dica: o site tenta organizar automaticamente detectando linhas com “:” ou “—”, listas com “•” ou “-”
+            e títulos em caixa alta.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="cardHeader">
+          <h2>📚 Notas salvas</h2>
+          <span class="pill" id="countNotes">0 notas</span>
+        </div>
+        <div class="cardBody">
+          <div class="list" id="notesList"></div>
+          <div class="hint" style="margin-top:12px;">
+            Offline = LocalStorage • Logado = Firestore (nuvem)
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW (normal) -->
+    <section id="view" class="card view">
+      <div class="viewTop">
+        <div class="viewTitle">
+          <h1 id="viewName">Nota</h1>
+          <div class="small" id="viewInfo">—</div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+          <button class="btn" id="btnCopy">📋 Copiar</button>
+          <button class="btn" id="btnShare">📎 Compartilhar</button>
+          <button class="btn" id="btnEdit">✏️ Editar</button>
+          <button class="btn btnDanger" id="btnDelete">🗑️ Apagar</button>
+        </div>
+      </div>
+
+      <div class="blocks" id="blocks"></div>
+
+      <div class="rawBox">
+        <details>
+          <summary>Ver texto original (bruto)</summary>
+          <pre id="rawText"></pre>
+        </details>
+      </div>
+    </section>
+
+    <!-- SHARE (somente leitura) -->
+    <section id="share" class="card shareBox">
+      <div class="shareTop">
+        <div class="shareTitle">
+          <div class="shareSticker" id="shareSticker">
+            <img id="shareStickerImg" src="" alt="">
+          </div>
+          <div style="min-width:0;">
+            <h1 id="shareName">Nota</h1>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;">
+              <span class="shareLock">🔒 Somente leitura</span>
+              <span class="pill" id="shareInfo">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
+          <button class="btn btnPrimary" id="btnCopyLink">📎 Copiar Link</button>
+          <button class="btn" id="btnDownloadShareHTML">⬇️ Baixar HTML</button>
+          <button class="btn" id="btnShareHome">🏠 Voltar</button>
+        </div>
+      </div>
+
+      <div class="shareSub" id="shareSub">
+        Esta página foi compartilhada do Bloco Inteligente Web.
+      </div>
+
+      <div class="blocks" id="shareBlocks"></div>
+
+      <div class="rawBox">
+        <details>
+          <summary>Ver texto original (bruto)</summary>
+          <pre id="shareRawText"></pre>
+        </details>
+      </div>
+    </section>
+
+    <div class="foot">
+      1 arquivo só • Offline + Nuvem • Google Login • Firestore • Sem servidor próprio
+    </div>
+  </div>
+
+  <div class="toast" id="toast">OK</div>
+
+  <script type="module">
+    /************************************************************
+     * FIREBASE (Auth + Firestore) - 1 arquivo só (module)
+     ************************************************************/
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDlebiz15ImBT_kXUqTClupHdJdUqUpdJo",
+      authDomain: "bloco-de-notas-inteligente-26.firebaseapp.com",
+      projectId: "bloco-de-notas-inteligente-26",
+      storageBucket: "bloco-de-notas-inteligente-26.firebasestorage.app",
+      messagingSenderId: "373747066646",
+      appId: "1:373747066646:web:0ea478e046aa9e7c315237",
+      measurementId: "G-MJ0R6JX2V3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    /***********************
+     *  STORAGE + ROUTING
+     ***********************/
+    const LOCAL_STORAGE_KEY = "BlocoInteligente_Notas_v4";
+
+    // favicon + sticker (para export/share)
+    const LOCAL_FAVICON_KEY = "BlocoInteligente_FaviconBase64_v1";
+    const LOCAL_STICKER_KEY = "BlocoInteligente_StickerBase64_v1";
+
+    let currentUser = null;
+    let editingNoteId = "";
+
+    function loadLocal(){
+      try{ return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "[]"); }
+      catch(e){ return []; }
+    }
+    function saveLocal(arr){
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(arr));
+    }
+
+    function uid(){
+      return Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+    }
+    function nowISO(){
+      return new Date().toISOString();
+    }
+    function formatDate(iso){
+      try{
+        const d = new Date(iso);
+        return d.toLocaleString("pt-BR", { dateStyle:"medium", timeStyle:"short" });
+      }catch(e){
+        return iso;
+      }
+    }
+
+    function toast(msg){
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(()=>t.classList.remove("show"), 1600);
+    }
+
+    function getQuery(){
+      const p = new URLSearchParams(location.search);
+      return {
+        id: p.get("id") || "",
+        mode: p.get("mode") || "home"
+      };
+    }
+
+    function goHome(){
+      history.pushState({}, "", location.pathname);
+      render();
+    }
+    function goView(id){
+      history.pushState({}, "", location.pathname + "?mode=view&id=" + encodeURIComponent(id));
+      render();
+    }
+    function goShare(id){
+      history.pushState({}, "", location.pathname + "?mode=share&id=" + encodeURIComponent(id));
+      render();
+    }
+
+    window.addEventListener("popstate", render);
+
+    /***********************
+     *  EXTRAS: FAVICON + STICKER
+     ***********************/
+    function loadBase64(key){ return localStorage.getItem(key) || ""; }
+    function saveBase64(key, val){ localStorage.setItem(key, val || ""); }
+
+    function applyFaviconFromLocal(){
+      const fav = loadBase64(LOCAL_FAVICON_KEY);
+      if(!fav) return;
+
+      let link = document.querySelector('link[rel="icon"]');
+      if(!link){
+        link = document.createElement("link");
+        link.rel = "icon";
+        document.head.appendChild(link);
+      }
+      link.href = fav;
+    }
+
+    function updateExtrasPreview(){
+      const fav = loadBase64(LOCAL_FAVICON_KEY);
+      const stk = loadBase64(LOCAL_STICKER_KEY);
+
+      const favImg = el("faviconPreview");
+      const stkImg = el("stickerPreview");
+
+      if(fav){
+        favImg.src = fav;
+        favImg.style.display = "block";
+        el("faviconLabel").textContent = "Ícone: salvo";
+      }else{
+        favImg.style.display = "none";
+        el("faviconLabel").textContent = "Ícone: (nenhum)";
+      }
+
+      if(stk){
+        stkImg.src = stk;
+        stkImg.style.display = "block";
+        el("stickerLabel").textContent = "Sticker: salvo";
+      }else{
+        stkImg.style.display = "none";
+        el("stickerLabel").textContent = "Sticker: (nenhum)";
+      }
+
+      // aplica favicon no site inteiro também
+      applyFaviconFromLocal();
+    }
+
+    function pickImageAsBase64(callback){
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+
+      input.onchange = () => {
+        const file = input.files?.[0];
+        if(!file) return;
+
+        if(file.size > 600 * 1024){
+          toast("Imagem muito grande (máx ~600KB)");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => callback(reader.result || "");
+        reader.readAsDataURL(file);
+      };
+
+      input.click();
+    }
+
+    /***********************
+     *  PARSER INTELIGENTE
+     ***********************/
+    function normalizeLine(line){
+      return (line || "").replace(/\t/g, " ").replace(/\s+/g, " ").trim();
+    }
+
+    function isTitleLike(line){
+      if(!line) return false;
+      const clean = line.trim();
+      if(clean.length < 3) return false;
+
+      if(clean === clean.toUpperCase() && clean.includes(":")) return true;
+      if(clean === clean.toUpperCase() && clean.endsWith(":")) return true;
+      if(clean === clean.toUpperCase() && /\(\s*\d+/.test(clean)) return true;
+
+      return false;
+    }
+
+    function splitKeyValue(line){
+      const m = line.match(/^(.{1,50}?)(?:\s*(?:⎯|—|-|:)\s*)(.+)$/);
+      if(!m) return null;
+
+      const key = normalizeLine(m[1]);
+      const val = normalizeLine(m[2]);
+
+      if(!key || !val) return null;
+      return { key, val };
+    }
+
+    function parseTextToSections(text){
+      const raw = (text || "").trim();
+      if(!raw) return [];
+
+      const lines = raw.split(/\r?\n/).map(l=>l.replace(/\u00A0/g," "));
+
+      let sections = [];
+      let current = { title:"Geral", kv:[], lines:[] };
+
+      function pushCurrent(){
+        if(current.kv.length || current.lines.length){
+          sections.push(current);
+        }
+      }
+
+      for(const original of lines){
+        const line = normalizeLine(original);
+        if(!line) continue;
+
+        if(isTitleLike(line)){
+          pushCurrent();
+          current = { title: line.replace(/\s*:\s*$/,"").trim(), kv:[], lines:[] };
+          continue;
+        }
+
+        if(/^•\s+/.test(line) || /^-\s+/.test(line)){
+          current.lines.push(line.replace(/^•\s+|^-\s+/,"").trim());
+          continue;
+        }
+
+        const kv = splitKeyValue(line);
+        if(kv){
+          current.kv.push(kv);
+          continue;
+        }
+
+        current.lines.push(line);
+      }
+
+      pushCurrent();
+
+      if(sections.length === 1 && sections[0].kv.length >= 10){
+        const s = sections[0];
+        const chunk = 8;
+        const newSections = [];
+
+        for(let i=0;i<s.kv.length;i+=chunk){
+          newSections.push({
+            title: i===0 ? "Dados" : "Dados (continuação)",
+            kv: s.kv.slice(i, i+chunk),
+            lines:[]
+          });
+        }
+
+        if(s.lines.length){
+          newSections.push({
+            title:"Anotações",
+            kv:[],
+            lines:s.lines
+          });
+        }
+
+        return newSections;
+      }
+
+      return sections;
+    }
+
+    /***********************
+     *  HELPERS UI
+     ***********************/
+    const el = (id)=>document.getElementById(id);
+
+    function escapeHtml(str){
+      return (str||"")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function setPanels(mode){
+      // home/editor
+      el("home").style.display = (mode === "home") ? "grid" : "none";
+
+      // view
+      el("view").style.display = (mode === "view") ? "block" : "none";
+
+      // share
+      el("share").style.display = (mode === "share") ? "block" : "none";
+
+      // header (esconde no share pra ficar "só a página")
+      const hideHeader = (mode === "share");
+      el("mainHeader").style.display = hideHeader ? "none" : "flex";
+    }
+
+    function setSaveModeTag(){
+      if(currentUser){
+        el("saveModeTag").textContent = "SALVANDO NA NUVEM";
+        el("saveModeTag").style.background = "rgba(0,234,255,.10)";
+        el("saveModeTag").style.borderColor = "rgba(0,234,255,.18)";
+      }else{
+        el("saveModeTag").textContent = "SALVANDO OFFLINE";
+        el("saveModeTag").style.background = "rgba(255,255,255,.05)";
+        el("saveModeTag").style.borderColor = "rgba(255,255,255,.12)";
+      }
+    }
+
+    /***********************
+     *  DATA LAYER (Local OU Firestore)
+     ***********************/
+    function makeNoteObj(name, text, id=""){
+      const t = (text || "").trim();
+      const newId = id || uid();
+      const iso = nowISO();
+
+      return {
+        id: newId,
+        name: (name || "").trim() || "Sem título",
+        text: t,
+        createdAt: iso,
+        updatedAt: iso
+      };
+    }
+
+    async function getAllNotes(){
+      if(!currentUser){
+        return loadLocal();
+      }
+
+      const colRef = collection(db, "users", currentUser.uid, "notes");
+      const q = query(colRef, orderBy("updatedAt", "desc"));
+      const snap = await getDocs(q);
+
+      const notes = [];
+      snap.forEach(d=> notes.push(d.data()));
+      return notes;
+    }
+
+    async function getPublicNoteById(id){
+      const ref = doc(db, "publicNotes", id);
+      const snap = await getDoc(ref);
+      if(!snap.exists()) return null;
+      return snap.data();
+    }
+
+    // ✅ CORRIGIDO: agora só cria 1 vez (sem update)
+    async function savePublicNote(note){
+      if(!currentUser) throw new Error("not_logged");
+
+      const ref = doc(db, "publicNotes", note.id);
+
+      // 1) checa se já existe
+      const snap = await getDoc(ref);
+
+      // 2) se já existe, NÃO tenta atualizar (regras bloqueiam update)
+      if(snap.exists()){
+        return;
+      }
+
+      // 3) se não existe, cria 1 vez (regras permitem create)
+      await setDoc(ref, {
+        id: note.id,
+        name: note.name || "Sem título",
+        text: note.text || "",
+        createdAt: note.createdAt || nowISO(),
+        updatedAt: nowISO(),
+        favicon: loadBase64(LOCAL_FAVICON_KEY) || "",
+        sticker: loadBase64(LOCAL_STICKER_KEY) || ""
+      });
+    }
+
+    async function getNoteById(id){
+      if(!currentUser){
+        return loadLocal().find(n=>n.id === id) || null;
+      }
+
+      const ref = doc(db, "users", currentUser.uid, "notes", id);
+      const snap = await getDoc(ref);
+      if(!snap.exists()) return null;
+      return snap.data();
+    }
+
+    async function upsertNote(note){
+      if(!currentUser){
+        const all = loadLocal();
+        const idx = all.findIndex(n=>n.id === note.id);
+
+        if(idx >= 0){
+          all[idx] = {
+            ...all[idx],
+            ...note,
+            createdAt: all[idx].createdAt || note.createdAt,
+            updatedAt: nowISO()
+          };
+        }else{
+          all.unshift(note);
+        }
+
+        saveLocal(all);
+        return;
+      }
+
+      const ref = doc(db, "users", currentUser.uid, "notes", note.id);
+
+      const existing = await getNoteById(note.id);
+      const createdAt = existing?.createdAt || note.createdAt || nowISO();
+
+      await setDoc(ref, { ...note, createdAt, updatedAt: nowISO() }, { merge:true });
+    }
+
+    async function deleteNoteById(id){
+      if(!currentUser){
+        saveLocal(loadLocal().filter(n=>n.id !== id));
+        return;
+      }
+      await deleteDoc(doc(db, "users", currentUser.uid, "notes", id));
+    }
+
+    async function clearAllNotes(){
+      if(!currentUser){
+        saveLocal([]);
+        return;
+      }
+
+      const all = await getAllNotes();
+      for(const n of all){
+        await deleteDoc(doc(db, "users", currentUser.uid, "notes", n.id));
+      }
+    }
+
+    /***********************
+     *  RENDER
+     ***********************/
+    async function renderNotesList(){
+      const list = el("notesList");
+      const all = await getAllNotes();
+
+      el("countNotes").textContent = `${all.length} nota${all.length===1?"":"s"}`;
+
+      if(!all.length){
+        list.innerHTML = `
+          <div class="hint" style="margin-top:6px;">
+            Nenhuma nota salva ainda. Cole um texto e clique em <b>Salvar & Abrir</b>.
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = "";
+
+      for(const n of all){
+        const preview = (n.text || "").trim().split(/\r?\n/).filter(Boolean).slice(0,3).join(" • ");
+        const item = document.createElement("div");
+        item.className = "noteItem";
+
+        item.innerHTML = `
+          <div class="noteMeta">
+            <div class="noteTitle">${escapeHtml(n.name || "Sem título")}</div>
+            <div class="noteDate">Atualizado: ${escapeHtml(formatDate(n.updatedAt || n.createdAt))}</div>
+            <div class="notePreview">${escapeHtml(preview || "—")}</div>
+          </div>
+
+          <div class="noteActions">
+            <button class="btn mini btnPrimary" data-open="${escapeHtml(n.id)}">👁️ Abrir</button>
+            <button class="btn mini" data-load="${escapeHtml(n.id)}">✏️ Carregar</button>
+          </div>
+        `;
+
+        list.appendChild(item);
+      }
+
+      list.querySelectorAll("[data-open]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          goView(btn.getAttribute("data-open"));
+        });
+      });
+
+      list.querySelectorAll("[data-load]").forEach(btn=>{
+        btn.addEventListener("click", async ()=>{
+          const id = btn.getAttribute("data-load");
+          const note = await getNoteById(id);
+          if(!note) return toast("Nota não encontrada");
+
+          editingNoteId = note.id || "";
+          el("noteName").value = note.name || "";
+          el("noteText").value = note.text || "";
+          el("noteText").focus();
+          toast("Nota carregada no editor (modo edição)");
+          goHome();
+        });
+      });
+    }
+
+    function renderBlocksInto(container, sections){
+      container.innerHTML = "";
+
+      if(!sections.length){
+        container.innerHTML = `
+          <div class="block" style="grid-column: 1 / -1;">
+            <h3>⚠️ Vazio</h3>
+            <div class="lines">
+              <div class="line">Essa nota está vazia.</div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      for(const s of sections){
+        const div = document.createElement("div");
+        div.className = "block";
+
+        const title = escapeHtml(s.title || "Bloco");
+        let inner = `<h3>✨ ${title}</h3>`;
+
+        if(s.kv && s.kv.length){
+          inner += `<div class="kv">`;
+          for(const pair of s.kv){
+            inner += `
+              <div class="row">
+                <div class="k">${escapeHtml(pair.key)}</div>
+                <div class="v">${escapeHtml(pair.val)}</div>
+              </div>
+            `;
+          }
+          inner += `</div>`;
+        }
+
+        if(s.lines && s.lines.length){
+          inner += `<div class="lines" style="margin-top:${(s.kv && s.kv.length) ? "12px":"0"};">`;
+          for(const l of s.lines){
+            inner += `<div class="line">${escapeHtml(l)}</div>`;
+          }
+          inner += `</div>`;
+        }
+
+        div.innerHTML = inner;
+        container.appendChild(div);
+      }
+    }
+
+    async function renderView(id){
+      const note = await getNoteById(id);
+      if(!note){
+        toast("Nota não encontrada");
+        goHome();
+        return;
+      }
+
+      el("viewName").textContent = note.name || "Nota";
+      el("viewInfo").textContent = `Criado: ${formatDate(note.createdAt)} • Atualizado: ${formatDate(note.updatedAt)}`;
+      el("rawText").textContent = note.text || "";
+
+      const sections = parseTextToSections(note.text || "");
+      renderBlocksInto(el("blocks"), sections);
+    }
+
+    async function renderShare(id){
+      const note = await getPublicNoteById(id);
+
+      if(!note){
+        setPanels("share");
+        el("shareName").textContent = "Nota não encontrada";
+        el("shareInfo").textContent = "—";
+        el("shareRawText").textContent = "";
+        el("shareSub").textContent = "Essa nota não existe ou não foi compartilhada.";
+        el("shareSticker").style.display = "none";
+        renderBlocksInto(el("shareBlocks"), []);
+        return;
+      }
+
+      // favicon do share
+      if(note.favicon){
+        let link = document.querySelector('link[rel="icon"]');
+        if(!link){
+          link = document.createElement("link");
+          link.rel = "icon";
+          document.head.appendChild(link);
+        }
+        link.href = note.favicon;
+      }else{
+        applyFaviconFromLocal();
+      }
+
+      // sticker do share
+      if(note.sticker){
+        el("shareStickerImg").src = note.sticker;
+        el("shareSticker").style.display = "block";
+      }else{
+        el("shareSticker").style.display = "none";
+      }
+
+      el("shareName").textContent = note.name || "Nota";
+      el("shareInfo").textContent = `Atualizado: ${formatDate(note.updatedAt || note.createdAt)}`;
+      el("shareRawText").textContent = note.text || "";
+      el("shareSub").textContent = "Compartilhado do Bloco Inteligente Web • Somente leitura";
+
+      const sections = parseTextToSections(note.text || "");
+      renderBlocksInto(el("shareBlocks"), sections);
+    }
+
+    async function render(){
+      setSaveModeTag();
+      updateExtrasPreview();
+
+      const q = getQuery();
+
+      if(q.mode === "share" && q.id){
+        setPanels("share");
+        await renderShare(q.id);
+        return;
+      }
+
+      await renderNotesList();
+
+      if(q.mode === "view" && q.id){
+        setPanels("view");
+
+        if(q.id === "preview"){
+          return;
+        }
+
+        await renderView(q.id);
+      }else{
+        setPanels("home");
+      }
+    }
+
+    /***********************
+     *  EXPORTAR HTML (download)
+     ***********************/
+    function downloadFile(filename, content, type="text/html"){
+      const blob = new Blob([content], { type });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 800);
+    }
+
+    function exportNoteAsHTML(name, text, faviconOverride="", stickerOverride=""){
+      const safeName = (name || "nota").trim().replace(/[\\/:*?"<>|]+/g, "-").slice(0,60);
+      const sections = parseTextToSections(text || "");
+
+      const favicon = faviconOverride || loadBase64(LOCAL_FAVICON_KEY);
+      const sticker = stickerOverride || loadBase64(LOCAL_STICKER_KEY);
+
+      const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>${escapeHtml(safeName)}</title>
+${favicon ? `<link rel="icon" href="${favicon}">` : ""}
+<style>
+  body{
+    margin:0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    background: #050f24;
+    color: #eaf6ff;
+    padding: 22px;
+  }
+  h1{ margin:0 0 8px; font-size: 22px; }
+  .sub{ opacity:.7; margin-bottom: 18px; font-size: 13px; }
+  .grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media(max-width: 900px){ .grid{ grid-template-columns: 1fr; } }
+  .card{
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.04);
+    border-radius: 18px;
+    padding: 14px;
+  }
+  .card h2{ margin:0 0 10px; font-size: 13px; text-transform: uppercase; letter-spacing: .3px; }
+  .row{
+    display:flex;
+    justify-content:space-between;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom:1px dashed rgba(255,255,255,.12);
+  }
+  .row:last-child{ border-bottom:none; }
+  .k{ opacity:.75; font-weight:800; font-size: 12px; max-width: 42%; }
+  .v{ text-align:right; font-size: 13px; word-break: break-word; }
+  .line{
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(0,0,0,.18);
+    border-radius: 14px;
+    padding: 10px 12px;
+    margin-top: 8px;
+    line-height: 1.35;
+  }
+  details{ margin-top: 14px; opacity:.9; }
+  pre{ white-space: pre-wrap; word-break: break-word; font-size: 12.5px; line-height: 1.5; opacity:.9; }
+  .stickerEnd{ margin-top: 18px; display:flex; justify-content:center; }
+  .stickerEnd img{
+    max-width: 140px;
+    max-height: 140px;
+    border-radius: 18px;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.18);
+    padding: 8px;
+    box-shadow: 0 16px 40px rgba(0,0,0,.35);
+  }
+</style>
+</head>
+<body>
+  <h1>${escapeHtml(name || "Sem título")}</h1>
+  <div class="sub">Exportado do Bloco Inteligente Web</div>
+
+  <div class="grid">
+    ${sections.map(s=>{
+      const kv = (s.kv||[]).map(p=>`
+        <div class="row">
+          <div class="k">${escapeHtml(p.key)}</div>
+          <div class="v">${escapeHtml(p.val)}</div>
+        </div>
+      `).join("");
+
+      const lines = (s.lines||[]).map(l=>`<div class="line">${escapeHtml(l)}</div>`).join("");
+
+      return `
+        <div class="card">
+          <h2>${escapeHtml(s.title||"Bloco")}</h2>
+          ${kv}
+          ${lines}
+        </div>
+      `;
+    }).join("")}
+  </div>
+
+  <details>
+    <summary>Texto bruto</summary>
+    <pre>${escapeHtml(text || "")}</pre>
+  </details>
+
+  ${sticker ? `
+    <div class="stickerEnd">
+      <img src="${sticker}" alt="sticker" />
+    </div>
+  ` : ""}
+
+</body>
+</html>`;
+
+      downloadFile(`${safeName}.html`, html, "text/html");
+    }
+
+    /***********************
+     *  EVENTOS UI
+     ***********************/
+    el("btnGoHome").addEventListener("click", goHome);
+
+    el("btnNew").addEventListener("click", ()=>{
+      editingNoteId = "";
+      el("noteName").value = "";
+      el("noteText").value = "";
+      el("noteText").focus();
+      toast("Nova nota pronta");
+      goHome();
+    });
+
+    el("btnClearAll").addEventListener("click", async ()=>{
+      const ok = confirm("Apagar TODAS as notas salvas? Isso não pode ser desfeito.");
+      if(!ok) return;
+
+      await clearAllNotes();
+      editingNoteId = "";
+      await renderNotesList();
+      toast("Tudo apagado");
+      goHome();
+    });
+
+    // Salvar & Abrir
+    el("btnSaveOpen").addEventListener("click", async ()=>{
+      const name = el("noteName").value.trim() || "Sem título";
+      const text = el("noteText").value.trim();
+
+      if(!text){
+        toast("Cole algum texto primeiro");
+        return;
+      }
+
+      const note = makeNoteObj(name, text, editingNoteId);
+      await upsertNote(note);
+
+      editingNoteId = note.id;
+      toast("Salvo!");
+      goView(note.id);
+    });
+
+    // Só salvar
+    el("btnJustSave").addEventListener("click", async ()=>{
+      const name = el("noteName").value.trim() || "Sem título";
+      const text = el("noteText").value.trim();
+
+      if(!text){
+        toast("Cole algum texto primeiro");
+        return;
+      }
+
+      const note = makeNoteObj(name, text, editingNoteId);
+      await upsertNote(note);
+
+      editingNoteId = note.id;
+      await renderNotesList();
+      toast("Nota salva");
+    });
+
+    el("btnFormatPreview").addEventListener("click", ()=>{
+      const text = el("noteText").value.trim();
+      if(!text){
+        toast("Cole algum texto primeiro");
+        return;
+      }
+
+      const name = el("noteName").value.trim() || "Prévia";
+
+      history.pushState({}, "", location.pathname + "?mode=view&id=preview");
+      setPanels("view");
+
+      el("viewName").textContent = name;
+      el("viewInfo").textContent = "Pré-organização (não salva)";
+      el("rawText").textContent = text;
+
+      const sections = parseTextToSections(text || "");
+      renderBlocksInto(el("blocks"), sections);
+
+      toast("Prévia pronta");
+    });
+
+    el("btnExportHTML").addEventListener("click", ()=>{
+      const name = el("noteName").value.trim() || "Sem título";
+      const text = el("noteText").value.trim();
+
+      if(!text){
+        toast("Cole algum texto primeiro");
+        return;
+      }
+
+      exportNoteAsHTML(name, text);
+      toast("Exportado!");
+    });
+
+    el("btnPickFavicon").addEventListener("click", ()=>{
+      pickImageAsBase64((base64)=>{
+        if(!base64) return;
+        saveBase64(LOCAL_FAVICON_KEY, base64);
+        updateExtrasPreview();
+        toast("Ícone do export salvo!");
+      });
+    });
+
+    el("btnPickSticker").addEventListener("click", ()=>{
+      pickImageAsBase64((base64)=>{
+        if(!base64) return;
+        saveBase64(LOCAL_STICKER_KEY, base64);
+        updateExtrasPreview();
+        toast("Emoji/sticker salvo!");
+      });
+    });
+
+    el("btnClearExtras").addEventListener("click", ()=>{
+      const ok = confirm("Remover o ícone e o sticker salvos?");
+      if(!ok) return;
+
+      localStorage.removeItem(LOCAL_FAVICON_KEY);
+      localStorage.removeItem(LOCAL_STICKER_KEY);
+      updateExtrasPreview();
+      toast("Removido!");
+    });
+
+    // VIEW buttons
+    el("btnCopy").addEventListener("click", async ()=>{
+      const q = getQuery();
+      if(!q.id) return;
+
+      let text = "";
+      if(q.id === "preview"){
+        text = el("rawText").textContent || "";
+      }else{
+        const note = await getNoteById(q.id);
+        text = note ? (note.text || "") : "";
+      }
+
+      try{
+        await navigator.clipboard.writeText(text);
+        toast("Copiado!");
+      }catch(e){
+        toast("Não deu permissão pra copiar");
+      }
+    });
+
+    // ✅ COMPARTILHAR (agora sem erro na 2ª vez)
+    el("btnShare").addEventListener("click", async ()=>{
+      const q = getQuery();
+      if(!q.id || q.id === "preview"){
+        toast("Abra uma nota salva para compartilhar");
+        return;
+      }
+
+      if(!currentUser){
+        toast("Para compartilhar por link, precisa estar logado no Google");
+        return;
+      }
+
+      const note = await getNoteById(q.id);
+      if(!note){
+        toast("Nota não encontrada");
+        return;
+      }
+
+      try{
+        await savePublicNote(note);
+
+        // sempre abre o share (mesmo se já existia)
+        goShare(note.id);
+
+        toast("Link pronto!");
+      }catch(e){
+        console.log(e);
+        toast("Erro ao compartilhar");
+      }
+    });
+
+    el("btnEdit").addEventListener("click", async ()=>{
+      const q = getQuery();
+      if(!q.id || q.id === "preview"){
+        toast("Voltou pro editor");
+        goHome();
+        return;
+      }
+
+      const note = await getNoteById(q.id);
+      if(!note) return toast("Nota não encontrada");
+
+      editingNoteId = note.id || "";
+      el("noteName").value = note.name || "";
+      el("noteText").value = note.text || "";
+      toast("Carregado no editor (modo edição)");
+      goHome();
+      el("noteText").focus();
+    });
+
+    el("btnDelete").addEventListener("click", async ()=>{
+      const q = getQuery();
+      if(!q.id || q.id === "preview"){
+        toast("Nada pra apagar");
+        goHome();
+        return;
+      }
+
+      const note = await getNoteById(q.id);
+      if(!note) return toast("Nota não encontrada");
+
+      const ok = confirm(`Apagar a nota "${note.name}"?`);
+      if(!ok) return;
+
+      await deleteNoteById(q.id);
+      toast("Nota apagada");
+      editingNoteId = "";
+      goHome();
+      await renderNotesList();
+    });
+
+    // SHARE buttons
+    el("btnShareHome").addEventListener("click", ()=>{
+      goHome();
+    });
+
+    el("btnCopyLink").addEventListener("click", async ()=>{
+      const url = location.href;
+      try{
+        await navigator.clipboard.writeText(url);
+        toast("Link copiado!");
+      }catch(e){
+        toast("Não deu permissão pra copiar");
+      }
+    });
+
+    el("btnDownloadShareHTML").addEventListener("click", async ()=>{
+      const q = getQuery();
+      if(!q.id) return;
+
+      const note = await getPublicNoteById(q.id);
+      if(!note){
+        toast("Nota não encontrada");
+        return;
+      }
+
+      exportNoteAsHTML(note.name || "nota", note.text || "", note.favicon || "", note.sticker || "");
+      toast("Baixado!");
+    });
+
+    /***********************
+     *  AUTH (Google)
+     ***********************/
+    async function doLogin(){
+      try{
+        await signInWithPopup(auth, provider);
+        toast("Logado!");
+      }catch(e){
+        console.log(e);
+        toast("Não deu pra logar");
+      }
+    }
+
+    async function doLogout(){
+      try{
+        await signOut(auth);
+        toast("Saiu da conta");
+      }catch(e){
+        toast("Erro ao sair");
+      }
+    }
+
+    el("btnLogin").addEventListener("click", doLogin);
+    el("btnLogout").addEventListener("click", doLogout);
+
+    function updateUserUI(user){
+      if(user){
+        el("userName").textContent = user.displayName || "Usuário";
+        el("userEmail").textContent = user.email || "Conta Google";
+        el("btnLogin").style.display = "none";
+        el("btnLogout").style.display = "inline-flex";
+
+        if(user.photoURL){
+          el("avatarImg").src = user.photoURL;
+          el("avatarImg").style.display = "block";
+        }else{
+          el("avatarImg").style.display = "none";
+        }
+      }else{
+        el("userName").textContent = "Não logado";
+        el("userEmail").textContent = "Modo offline (LocalStorage)";
+        el("btnLogin").style.display = "inline-flex";
+        el("btnLogout").style.display = "none";
+        el("avatarImg").style.display = "none";
+      }
+      setSaveModeTag();
+    }
+
+    onAuthStateChanged(auth, async (user)=>{
+      currentUser = user || null;
+      updateUserUI(currentUser);
+
+      // ao trocar login, sai do modo edição
+      editingNoteId = "";
+
+      await render();
+    });
+
+    /***********************
+     *  INIT
+     ***********************/
+    render();
+  </script>
+</body>
+</html>
